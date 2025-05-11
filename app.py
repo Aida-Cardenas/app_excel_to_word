@@ -10,38 +10,37 @@ class ContratosApp:
         self.root.title("Generador de Contratos")
         self.root.geometry("600x400")
         
-        # Variables
         self.excel_path = tk.StringVar()
         self.template_path = tk.StringVar()
         self.output_dir = tk.StringVar()
         
-        # Crear interfaz
+        # interfaz
         self.create_widgets()
     
     def create_widgets(self):
-        # Frame principal
+        # cuadro principal
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
-        # Selección de archivo Excel
+        # seleccion excel
         ttk.Label(main_frame, text="Archivo Excel:").grid(row=0, column=0, sticky=tk.W, pady=5)
         ttk.Entry(main_frame, textvariable=self.excel_path, width=50).grid(row=0, column=1, padx=5)
         ttk.Button(main_frame, text="Buscar", command=self.browse_excel).grid(row=0, column=2)
         
-        # Selección de plantilla Word
+        # seleccion word
         ttk.Label(main_frame, text="Plantilla Word:").grid(row=1, column=0, sticky=tk.W, pady=5)
         ttk.Entry(main_frame, textvariable=self.template_path, width=50).grid(row=1, column=1, padx=5)
         ttk.Button(main_frame, text="Buscar", command=self.browse_template).grid(row=1, column=2)
         
-        # Selección de directorio de salida
+        # crear carpeta para guardar los contratos
         ttk.Label(main_frame, text="Carpeta de salida:").grid(row=2, column=0, sticky=tk.W, pady=5)
         ttk.Entry(main_frame, textvariable=self.output_dir, width=50).grid(row=2, column=1, padx=5)
         ttk.Button(main_frame, text="Buscar", command=self.browse_output).grid(row=2, column=2)
         
-        # Botón de generación
+        # boton de "generar contratos"
         ttk.Button(main_frame, text="Generar Contratos", command=self.generate_contracts).grid(row=3, column=1, pady=20)
         
-        # Barra de progreso
+        # barra progreso por si son muchos y tarda
         self.progress = ttk.Progressbar(main_frame, length=400, mode='determinate')
         self.progress.grid(row=4, column=0, columnspan=3, pady=10)
     
@@ -70,7 +69,7 @@ class ContratosApp:
             return
         
         try:
-            # Leer archivo Excel
+            # leer excel
             df = pd.read_excel(self.excel_path.get())
             
             # Verificar columnas requeridas
@@ -79,16 +78,16 @@ class ContratosApp:
                 messagebox.showerror("Error", "El archivo Excel debe contener las columnas: nombre, apellido, cedula, num_casas, prestamo")
                 return
             
-            # Configurar barra de progreso
+            # barra de carga
             self.progress['maximum'] = len(df)
             self.progress['value'] = 0
             
-            # Procesar cada fila
+            # leer cada fila
             for index, row in df.iterrows():
-                # Crear nuevo documento desde la plantilla
+                # crear nuevo doc desde plantilla
                 doc = Document(self.template_path.get())
                 
-                # Reemplazar marcadores en el documento
+                # reemplazar marcadores en el doc
                 replacements = {
                     '{{nombre}}': str(row['nombre']),
                     '{{apellido}}': str(row['apellido']),
@@ -102,14 +101,14 @@ class ContratosApp:
                         if key in paragraph.text:
                             paragraph.text = paragraph.text.replace(key, value)
                 
-                # Guardar documento
+                # guardar doc
                 output_file = os.path.join(
                     self.output_dir.get(),
                     f"contrato_{row['cedula']}.docx"
                 )
                 doc.save(output_file)
                 
-                # Actualizar barra de progreso
+                # actualizar barra de progreso
                 self.progress['value'] = index + 1
                 self.root.update_idletasks()
             
